@@ -1,0 +1,146 @@
+import { Category, Product } from "../types";
+
+export const categories: Category[] = [
+  {
+    id: "1",
+    name: "Sofa - Salon",
+    slug: "sofa-salon",
+    image: "https://images.unsplash.com/photo-1555041469-a586c61ea9bc?auto=format&fit=crop&w=600&q=80",
+  },
+  {
+    id: "2",
+    name: "Giường ngủ",
+    slug: "giuong-ngu",
+    image: "https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?auto=format&fit=crop&w=600&q=80",
+  },
+  {
+    id: "3",
+    name: "Tủ quần áo",
+    slug: "tu-quan-ao",
+    image: "https://images.unsplash.com/photo-1558997519-83ea9252edf8?auto=format&fit=crop&w=600&q=80",
+  },
+  {
+    id: "4",
+    name: "Bàn ăn",
+    slug: "ban-an",
+    image: "https://images.unsplash.com/photo-1604578762246-41134e37f9cc?auto=format&fit=crop&w=600&q=80",
+  },
+  {
+    id: "5",
+    name: "Kệ Tivi",
+    slug: "ke-tivi",
+    image: "https://images.unsplash.com/photo-1593062096033-9a26b09da705?auto=format&fit=crop&w=600&q=80",
+  },
+];
+
+export const products: Product[] = [
+  {
+    id: "mock-1",
+    name: "Sofa gỗ bọc nỉ Hàn Quốc cao cấp",
+    categoryId: "1",
+    image: "https://images.unsplash.com/photo-1555041469-a586c61ea9bc?auto=format&fit=crop&w=800&q=80",
+    images: [
+      "https://images.unsplash.com/photo-1555041469-a586c61ea9bc?auto=format&fit=crop&w=800&q=80",
+      "https://images.unsplash.com/photo-1550254478-ead40cc54513?auto=format&fit=crop&w=800&q=80",
+      "https://images.unsplash.com/photo-1567016432779-094069958ea5?auto=format&fit=crop&w=800&q=80",
+    ],
+    description: "Sofa gỗ chữ L bọc nỉ cao cấp nhập khẩu Hàn Quốc, khung gỗ sồi tự nhiên. Đệm mút D40 siêu êm, vải nỉ chống bám bụi, dễ vệ sinh. Kích thước 2m8 x 1m6.",
+    material: "Gỗ sồi tự nhiên",
+    color: "Xám tro",
+    dimensions: "D280 x R160 x C85 cm",
+  },
+  {
+    id: "mock-2",
+    name: "Giường gỗ sồi Nga 1m8x2m",
+    categoryId: "2",
+    image: "https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?auto=format&fit=crop&w=800&q=80",
+    images: [
+      "https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?auto=format&fit=crop&w=800&q=80",
+      "https://images.unsplash.com/photo-1631679706909-1844bbd07221?auto=format&fit=crop&w=800&q=80",
+    ],
+    description: "Giường ngủ gỗ sồi Nga nguyên tấm, sơn PU cao cấp chống trầy xước. Đầu giường bọc nệm da cao cấp.",
+    material: "Gỗ sồi Nga",
+    color: "Nâu tự nhiên",
+    dimensions: "D200 x R180 x C100 cm",
+  },
+  {
+    id: "mock-3",
+    name: "Bàn ăn mặt đá Ceramic 6 ghế",
+    categoryId: "4",
+    image: "https://images.unsplash.com/photo-1604578762246-41134e37f9cc?auto=format&fit=crop&w=800&q=80",
+    images: [
+      "https://images.unsplash.com/photo-1604578762246-41134e37f9cc?auto=format&fit=crop&w=800&q=80",
+      "https://images.unsplash.com/photo-1595428774223-ef52624120d2?auto=format&fit=crop&w=800&q=80",
+    ],
+    description: "Bàn ăn mặt đá Ceramic cao cấp chống trầy, chân sắt sơn tĩnh điện. Kèm 6 ghế bọc da PU.",
+    material: "Đá Ceramic + Sắt",
+    color: "Đen",
+    dimensions: "D160 x R80 x C75 cm",
+  },
+  {
+    id: "mock-4",
+    name: "Tủ quần áo gỗ công nghiệp 4 cánh",
+    categoryId: "3",
+    image: "https://images.unsplash.com/photo-1558997519-83ea9252edf8?auto=format&fit=crop&w=800&q=80",
+    images: [
+      "https://images.unsplash.com/photo-1558997519-83ea9252edf8?auto=format&fit=crop&w=800&q=80",
+      "https://images.unsplash.com/photo-1595526114035-0d45ed16cfbf?auto=format&fit=crop&w=800&q=80",
+    ],
+    description: "Tủ quần áo 4 cánh gỗ MDF phủ Melamine chống ẩm, ngăn kéo thông minh.",
+    material: "Gỗ MDF Melamine",
+    color: "Trắng sữa",
+    dimensions: "D200 x R60 x C220 cm",
+  },
+  {
+    id: "mock-5",
+    name: "Kệ Tivi gỗ óc chó hiện đại",
+    categoryId: "5",
+    image: "https://images.unsplash.com/photo-1593062096033-9a26b09da705?auto=format&fit=crop&w=800&q=80",
+    images: [
+      "https://images.unsplash.com/photo-1593062096033-9a26b09da705?auto=format&fit=crop&w=800&q=80",
+    ],
+    description: "Kệ tivi gỗ óc chó tự nhiên phong cách Bắc Âu, thiết kế tối giản sang trọng.",
+    material: "Gỗ óc chó",
+    color: "Nâu đậm",
+    dimensions: "D180 x R40 x C50 cm",
+  },
+  {
+    id: "mock-6",
+    name: "Sofa văng da bò Ý nhập khẩu",
+    categoryId: "1",
+    image: "https://images.unsplash.com/photo-1550254478-ead40cc54513?auto=format&fit=crop&w=800&q=80",
+    images: [
+      "https://images.unsplash.com/photo-1550254478-ead40cc54513?auto=format&fit=crop&w=800&q=80",
+    ],
+    description: "Sofa văng 3 chỗ ngồi bọc da bò Ý nhập khẩu, đệm mút D40 siêu êm.",
+    material: "Da bò Ý + Gỗ dầu",
+    color: "Nâu caramel",
+    dimensions: "D210 x R90 x C80 cm",
+  },
+  {
+    id: "mock-7",
+    name: "Bàn làm việc gỗ thông tự nhiên",
+    categoryId: "4",
+    image: "https://images.unsplash.com/photo-1518455027359-f3f8164ba6bd?auto=format&fit=crop&w=800&q=80",
+    images: [
+      "https://images.unsplash.com/photo-1518455027359-f3f8164ba6bd?auto=format&fit=crop&w=800&q=80",
+    ],
+    description: "Bàn làm việc gỗ thông nhập khẩu, thiết kế Scandinavian tối giản.",
+    material: "Gỗ thông",
+    color: "Trắng",
+    dimensions: "D120 x R60 x C75 cm",
+  },
+  {
+    id: "mock-8",
+    name: "Giường tầng trẻ em gỗ sồi",
+    categoryId: "2",
+    image: "https://images.unsplash.com/photo-1631679706909-1844bbd07221?auto=format&fit=crop&w=800&q=80",
+    images: [
+      "https://images.unsplash.com/photo-1631679706909-1844bbd07221?auto=format&fit=crop&w=800&q=80",
+    ],
+    description: "Giường tầng cho bé gỗ sồi tự nhiên, lan can an toàn, sơn PU không độc hại.",
+    material: "Gỗ sồi",
+    color: "Tự nhiên",
+    dimensions: "D200 x R120 x H170 cm",
+  },
+];
