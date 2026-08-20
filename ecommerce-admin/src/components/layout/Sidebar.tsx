@@ -1,13 +1,13 @@
-"use client";
+﻿"use client";
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { removeToken } from "@/utils/auth";
+import { signOut } from "aws-amplify/auth";
 
 const navItems = [
   {
     href: "/",
-    label: "Tổng quan",
+    label: "Tá»•ng quan",
     icon: (
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
         <rect x="3" y="3" width="7" height="7" /><rect x="14" y="3" width="7" height="7" />
@@ -17,7 +17,7 @@ const navItems = [
   },
   {
     href: "/products",
-    label: "Sản phẩm",
+    label: "Sáº£n pháº©m",
     icon: (
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
         <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z" />
@@ -28,7 +28,7 @@ const navItems = [
   },
   {
     href: "/categories",
-    label: "Danh mục",
+    label: "Danh má»¥c",
     icon: (
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
         <line x1="8" y1="6" x2="21" y2="6" /><line x1="8" y1="12" x2="21" y2="12" />
@@ -44,14 +44,7 @@ export default function AdminSidebar() {
   const pathname = usePathname();
   const router = useRouter();
 
-  const handleLogout = async () => {
-    try {
-      await fetch("/api/auth/logout", { method: "POST" });
-    } finally {
-      removeToken(); // Xóa các cookie cũ/không httpOnly nếu còn
-      router.push("/login");
-    }
-  };
+  const handleLogout = async () => { await signOut(); };
 
   return (
     <aside className="w-60 h-screen bg-[#1e2532] flex flex-col fixed left-0 top-0 z-40">
@@ -62,7 +55,7 @@ export default function AdminSidebar() {
             <span className="text-white font-bold text-sm">G</span>
           </div>
           <div>
-            <p className="text-white font-semibold text-sm leading-tight">Gỗ Trường Phát</p>
+            <p className="text-white font-semibold text-sm leading-tight">Gá»— TrÆ°á»ng PhÃ¡t</p>
             <p className="text-white/40 text-xs">Admin Panel</p>
           </div>
         </div>
@@ -71,7 +64,7 @@ export default function AdminSidebar() {
       {/* Navigation */}
       <nav className="flex-1 px-3 py-4 overflow-y-auto">
         <p className="text-white/30 text-xs font-semibold uppercase tracking-wider px-3 mb-2">
-          Quản lý
+          Quáº£n lÃ½
         </p>
         <ul className="space-y-0.5">
           {navItems.map((item) => {
@@ -107,9 +100,10 @@ export default function AdminSidebar() {
             <polyline points="16 17 21 12 16 7" />
             <line x1="21" y1="12" x2="9" y2="12" />
           </svg>
-          Đăng xuất
+          ÄÄƒng xuáº¥t
         </button>
       </div>
     </aside>
   );
 }
+

@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+﻿import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import Header from "@/components/layout/Header";
@@ -9,10 +9,10 @@ import { getCategories } from "@/services/api";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Gỗ Trường Phát | Xưởng Nội Thất Gỗ Cao Cấp",
+  title: "Gá»— TrÆ°á»ng PhÃ¡t | XÆ°á»Ÿng Ná»™i Tháº¥t Gá»— Cao Cáº¥p",
   description:
-    "Gỗ Trường Phát — Xưởng sản xuất đồ gỗ nội thất cao cấp theo yêu cầu. Sofa, giường, tủ, bàn ăn từ gỗ tự nhiên. Bảo hành 12 tháng.",
-  keywords: "nội thất gỗ, đồ gỗ cao cấp, xưởng gỗ, sofa gỗ, giường gỗ, tủ gỗ",
+    "Gá»— TrÆ°á»ng PhÃ¡t â€” XÆ°á»Ÿng sáº£n xuáº¥t Ä‘á»“ gá»— ná»™i tháº¥t cao cáº¥p theo yÃªu cáº§u. Sofa, giÆ°á»ng, tá»§, bÃ n Äƒn tá»« gá»— tá»± nhiÃªn. Báº£o hÃ nh 12 thÃ¡ng.",
+  keywords: "ná»™i tháº¥t gá»—, Ä‘á»“ gá»— cao cáº¥p, xÆ°á»Ÿng gá»—, sofa gá»—, giÆ°á»ng gá»—, tá»§ gá»—",
 };
 
 export default async function RootLayout({

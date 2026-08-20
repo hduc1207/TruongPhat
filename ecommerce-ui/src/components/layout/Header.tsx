@@ -2,118 +2,62 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { jwtDecode } from "jwt-decode";
-import { Category } from "@/types";
 import MobileMenu from "./MobileMenu";
+import { signInWithRedirect, signOut, fetchAuthSession, getCurrentUser } from "aws-amplify/auth";
 
 interface HeaderProps {
-  categories: Category[];
+  categories?: any[];
 }
 
-interface CognitoToken {
-  email?: string;
-  "cognito:username"?: string;
-  "cognito:groups"?: string[];
-  exp?: number;
-}
-
-function parseToken(token: string): CognitoToken | null {
-  try {
-    const decoded = jwtDecode<CognitoToken>(token);
-    if (decoded.exp && decoded.exp * 1000 < Date.now()) {
-      localStorage.removeItem("customer_token");
-      return null;
-    }
-    return decoded;
-  } catch {
-    return null;
-  }
-}
-
-function generateRandomString(length: number) {
-  const charset = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~";
-  let result = "";
-  const values = crypto.getRandomValues(new Uint8Array(length));
-  for (let i = 0; i < length; i++) {
-    result += charset[values[i] % charset.length];
-  }
-  return result;
-}
-
-async function generateCodeChallenge(codeVerifier: string) {
-  const encoder = new TextEncoder();
-  const data = encoder.encode(codeVerifier);
-  const digest = await crypto.subtle.digest("SHA-256", data);
-  return btoa(String.fromCharCode(...new Uint8Array(digest)))
-    .replace(/\+/g, "-")
-    .replace(/\//g, "_")
-    .replace(/=+$/, "");
-}
-
-export default function Header({ categories }: HeaderProps) {
+export default function Header({ categories = [] }: HeaderProps) {
   const [menuOpen, setMenuOpen] = useState(false);
-  const [userInfo, setUserInfo] = useState<CognitoToken | null>(null);
-
-  const isLoggedIn = !!userInfo;
-  const isAdmin = userInfo?.["cognito:groups"]?.includes("ADMIN") ?? false;
-  const displayName = userInfo?.email || userInfo?.["cognito:username"] || "Tài khoản";
-
-  const domain = "https://ap-southeast-1vuxgzpcdu.auth.ap-southeast-1.amazoncognito.com";
-  const clientId = "1n00iku2aqmicd0ctuq51ijk7b";
-  const redirectUri = "https://d26tfxw2msp72q.cloudfront.net";
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [displayName, setDisplayName] = useState("Tài khoản");
 
   useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const code = params.get("code");
-    const verifier = sessionStorage.getItem("pkce_verifier");
-
-    if (code && verifier) {
-      const body = new URLSearchParams();
-      body.append("grant_type", "authorization_code");
-      body.append("client_id", clientId);
-      body.append("code", code);
-      body.append("redirect_uri", redirectUri);
-      body.append("code_verifier", verifier);
-
-      fetch(domain + "/oauth2/token", {
-        method: "POST",
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        body: body.toString(),
-      })
-        .then((res) => res.json())
-        .then((data) => {
-          if (data.access_token) {
-            localStorage.setItem("customer_token", data.access_token);
-            sessionStorage.removeItem("pkce_verifier");
-            window.history.replaceState(null, "", window.location.pathname);
-            setUserInfo(parseToken(data.access_token));
+    // Amplify automatically handles the ?code= in URL.
+    // We just wait for session.
+    let isMounted = true;
+    fetchAuthSession()
+      .then((session) => {
+        if (session.tokens?.accessToken) {
+          if (isMounted) {
+            setIsLoggedIn(true);
+            const groups = session.tokens.accessToken.payload["cognito:groups"] as string[] | undefined;
+            setIsAdmin(groups?.includes("ADMIN") ?? false);
           }
-        })
-        .catch(console.error);
-    } else {
-      const token = localStorage.getItem("customer_token");
-      if (token) setUserInfo(parseToken(token));
-    }
+          return getCurrentUser();
+        }
+        return null;
+      })
+      .then((user) => {
+        if (user && isMounted) {
+          setDisplayName(user.signInDetails?.loginId || user.username);
+        }
+      })
+      .catch(() => {
+        // Not logged in
+        if (isMounted) setIsLoggedIn(false);
+      });
+      
+    return () => { isMounted = false; };
   }, []);
 
-  const handleLoginClick = async (e: React.MouseEvent) => {
+  const handleLoginClick = (e: React.MouseEvent) => {
     e.preventDefault();
-    const verifier = generateRandomString(128);
-    const challenge = await generateCodeChallenge(verifier);
-    sessionStorage.setItem("pkce_verifier", verifier);
-    const loginUrl = domain + "/login?client_id=" + clientId + "&response_type=code&scope=email+openid&redirect_uri=" + encodeURIComponent(redirectUri) + "&code_challenge=" + challenge + "&code_challenge_method=S256";
-    window.location.href = loginUrl;
+    signInWithRedirect();
   };
 
   const handleLogout = () => {
-    localStorage.removeItem("customer_token");
-    setUserInfo(null);
+    signOut();
+    setIsLoggedIn(false);
   };
 
   return (
     <header className="bg-white border-b border-stone-100 sticky top-0 z-50">
       <div className="bg-stone-800 text-stone-300 py-1.5 text-xs text-center font-medium tracking-wide">
-        Xưởng gỗ nội thất cao cấp — Đặt theo yêu cầu — Bảo hành 12 tháng
+        Xưởng gỗ nội thất cao cấp - Đặt theo yêu cầu - Bảo hành 12 tháng
       </div>
 
       <div className="container mx-auto px-4 py-4">
@@ -142,9 +86,9 @@ export default function Header({ categories }: HeaderProps) {
           </Link>
 
           <nav className="hidden md:flex items-center gap-7 text-sm font-medium text-stone-600">
-            <Link href="/" className="hover:text-amber-700 transition-colors">Trang chủ </Link>
+            <Link href="/" className="hover:text-amber-700 transition-colors">Trang chủ</Link>
             {categories.slice(0, 5).map((cat) => (
-              <Link key={cat.id} href={/categories/ + cat.slug} className="hover:text-amber-700 transition-colors whitespace-nowrap">
+              <Link key={cat.id} href={`/categories/${cat.slug}`} className="hover:text-amber-700 transition-colors whitespace-nowrap">
                 {cat.name}
               </Link>
             ))}

@@ -1,11 +1,13 @@
-import type { Metadata } from "next";
+﻿import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Admin Panel - Gỗ Trường Phát",
-  description: "Trang quản trị nội bộ - Gỗ Trường Phát",
+  title: "Admin Panel - Gá»— TrÆ°á»ng PhÃ¡t",
+  description: "Trang quáº£n trá»‹ ná»™i bá»™ - Gá»— TrÆ°á»ng PhÃ¡t",
   robots: "noindex, nofollow",
 };
+
+import AmplifyConfigure from '@/components/AmplifyConfigure';
 
 export default function RootLayout({
   children,
@@ -18,3 +20,4 @@ export default function RootLayout({
     </html>
   );
 }
+

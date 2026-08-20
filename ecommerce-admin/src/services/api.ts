@@ -1,4 +1,6 @@
-﻿export class UnauthorizedError extends Error {
+import { fetchAuthSession } from "aws-amplify/auth";
+
+export class UnauthorizedError extends Error {
   constructor() {
     super("Unauthorized");
     this.name = "UnauthorizedError";
@@ -22,15 +24,9 @@ export type ProductInput = Omit<Product, "productId" | "createAt">;
 
 const BASE_URL = "https://z5m5voxdhc.execute-api.ap-southeast-1.amazonaws.com/Stage";
 
-function getToken() {
-  if (typeof document === "undefined") return null;
-  const match = document.cookie.match(/(^| )admin_token=([^;]+)/);
-  if (match) return match[2];
-  return null;
-}
-
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
-  const token = getToken();
+  const session = await fetchAuthSession();
+  const token = session.tokens?.accessToken?.toString();
   if (!token) throw new UnauthorizedError();
 
   const headers = new Headers(init?.headers);
@@ -41,8 +37,15 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
 
   const res = await fetch(BASE_URL + path, { ...init, headers });
   
-  if (res.status === 401) throw new UnauthorizedError();
-  if (!res.ok) throw new Error("HTTP " + res.status);
+  if (res.status === 401) {
+    throw new UnauthorizedError();
+  }
+  
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message || `HTTP ${res.status}`);
+  }
+
   const data = await res.json();
   if (path === "/products" && (!init || init.method === "GET")) {
     const raw = Array.isArray(data) ? data : (data.value ?? []);
