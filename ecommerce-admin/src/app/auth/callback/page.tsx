@@ -1,5 +1,4 @@
 "use client";
-
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
@@ -9,79 +8,65 @@ export default function AuthCallbackPage() {
   const [errorMsg, setErrorMsg] = useState("");
 
   useEffect(() => {
-    const hash = window.location.hash;
-    if (!hash || !hash.includes("access_token=")) {
+    const params = new URLSearchParams(window.location.search);
+    const code = params.get("code");
+    const verifier = sessionStorage.getItem("pkce_verifier");
+
+    if (!code || !verifier) {
       setStatus("error");
-      setErrorMsg("Không tìm thấy token. Vui lòng thử đăng nhập lại.");
+      setErrorMsg("Không tìm thấy mã xác thực. Vui lòng đăng nhập lại.");
       return;
     }
 
-    const params = new URLSearchParams(hash.substring(1));
-    const token = params.get("access_token");
-    if (!token) {
-      setStatus("error");
-      setErrorMsg("Token không hợp lệ.");
-      return;
-    }
+    const domain = "https://ap-southeast-1vuxgzpcdu.auth.ap-southeast-1.amazoncognito.com";
+    const clientId = "1n00iku2aqmicd0ctuq51ijk7b";
+    const redirectUri = "https://d2gsjrw8qdxah8.cloudfront.net/auth/callback";
 
-    // Gửi token lên server để xác minh + kiểm tra quyền Admin
-    fetch("/api/auth/verify", {
+    const body = new URLSearchParams();
+    body.append("grant_type", "authorization_code");
+    body.append("client_id", clientId);
+    body.append("code", code);
+    body.append("redirect_uri", redirectUri);
+    body.append("code_verifier", verifier);
+
+    fetch(domain + "/oauth2/token", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ token }),
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: body.toString(),
     })
-      .then((res) => res.json())
+      .then((res) => {
+        if (!res.ok) throw new Error("Đổi mã thất bại");
+        return res.json();
+      })
       .then((data) => {
-        if (data.ok) {
-          // Xóa hash khỏi URL rồi vào dashboard
-          window.history.replaceState(null, "", "/");
-          router.replace("/");
+        if (data.access_token) {
+          document.cookie = "admin_token=" + data.access_token + "; path=/; max-age=3600; SameSite=Lax";
+          document.cookie = "admin_id_token=" + data.id_token + "; path=/; max-age=3600; SameSite=Lax";
+          sessionStorage.removeItem("pkce_verifier");
+          window.location.href = "/";
         } else {
           setStatus("error");
-          setErrorMsg(data.error || "Bạn không có quyền truy cập trang quản trị.");
+          setErrorMsg("Không nhận được token.");
         }
       })
-      .catch(() => {
+      .catch((err) => {
         setStatus("error");
-        setErrorMsg("Lỗi kết nối. Vui lòng thử lại.");
+        setErrorMsg(err.message || "Lỗi kết nối.");
       });
   }, [router]);
 
   if (status === "error") {
     return (
-      <div className="min-h-screen bg-[#f0f2f5] flex items-center justify-center p-4">
-        <div className="bg-white rounded-2xl shadow-sm border border-red-100 p-8 text-center max-w-md w-full">
-          <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#dc2626" strokeWidth="2">
-              <circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/>
-            </svg>
-          </div>
-          <h2 className="text-lg font-bold text-gray-800 mb-2">Truy cập bị từ chối</h2>
-          <p className="text-sm text-gray-500 mb-6">{errorMsg}</p>
-          <a
-            href="/login"
-            className="inline-block bg-amber-700 text-white text-sm font-semibold px-6 py-2.5 rounded-lg hover:bg-amber-800 transition-colors"
-          >
-            Đăng nhập lại
-          </a>
-        </div>
+      <div className="min-h-screen flex items-center justify-center p-4">
+        <p className="text-red-500">{errorMsg}</p>
+        <button onClick={() => router.push("/login")} className="ml-4 underline">Thử lại</button>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-[#f0f2f5] flex items-center justify-center p-4">
-      <div className="text-center">
-        <div className="inline-flex items-center justify-center w-16 h-16 bg-amber-700 rounded-2xl mb-6 shadow-lg">
-          <span className="text-white font-bold text-2xl">T</span>
-        </div>
-        <p className="text-gray-500 text-sm mb-6">Đang xác minh quyền truy cập...</p>
-        <div className="flex justify-center gap-1.5">
-          <span className="w-2 h-2 bg-amber-700 rounded-full animate-bounce" style={{ animationDelay: "0ms" }} />
-          <span className="w-2 h-2 bg-amber-700 rounded-full animate-bounce" style={{ animationDelay: "150ms" }} />
-          <span className="w-2 h-2 bg-amber-700 rounded-full animate-bounce" style={{ animationDelay: "300ms" }} />
-        </div>
-      </div>
+    <div className="min-h-screen flex items-center justify-center p-4">
+      <p>Đang xác minh...</p>
     </div>
   );
 }

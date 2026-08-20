@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { verifyAdminToken } from "@/utils/verify-token";
 
-const BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "";
+const BASE_URL = "https://z5m5voxdhc.execute-api.ap-southeast-1.amazonaws.com/Stage";
 
 export async function GET() {
   // Xác thực token trước khi proxy lên AWS
@@ -34,7 +34,7 @@ export async function POST(request: Request) {
   try {
     const body = await request.json();
 
-    // Validate các trường bắt buộc (MEDIUM #8)
+    // Validate các trường bắt buộc
     if (!body?.name || typeof body.name !== "string" || body.name.trim() === "") {
       return NextResponse.json({ error: "Tên sản phẩm là bắt buộc" }, { status: 400 });
     }
@@ -50,3 +50,5 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Lỗi tạo sản phẩm" }, { status: 500 });
   }
 }
+
+export const dynamic = 'force-static';

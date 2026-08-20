@@ -3,23 +3,20 @@ import { cookies } from "next/headers";
 
 const TOKEN_KEY = "admin_token";
 
-/**
- * Xác thực admin_token cookie bằng Public Key của AWS Cognito.
- * Không cần gọi lên AWS — thư viện tự cache Public Key.
- */
-export async function verifyAdminToken(): Promise<boolean> {
-  const cookieStore = await cookies();
-  const token = cookieStore.get(TOKEN_KEY)?.value;
+export async function verifyAdminToken(providedToken?: string): Promise<boolean> {
+  let token = providedToken;
+  if (!token) {
+    const cookieStore = await cookies();
+    token = cookieStore.get("admin_id_token")?.value || cookieStore.get("admin_token")?.value;
+  }
 
   if (!token) return false;
 
-  const userPoolId = process.env.COGNITO_USER_POOL_ID;
-  const clientId = process.env.NEXT_PUBLIC_COGNITO_CLIENT_ID;
-
-  // Fallback: Nếu chưa cấu hình Cognito, dùng lại HMAC cũ để không break
+  const userPoolId = "ap-southeast-1_vUxgZPCdU";
+  const clientId = "1n00iku2aqmicd0ctuq51ijk7b";
   if (!userPoolId || !clientId) {
     const { createHmac } = await import("crypto");
-    const TOKEN_SECRET = process.env.MOCK_TOKEN_SECRET ?? "change_this_secret";
+    const TOKEN_SECRET = "change_this_secret";
     try {
       const [payload, sig] = token.split(".");
       if (!payload || !sig) return false;

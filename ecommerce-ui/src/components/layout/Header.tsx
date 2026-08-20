@@ -30,6 +30,26 @@ function parseToken(token: string): CognitoToken | null {
   }
 }
 
+function generateRandomString(length: number) {
+  const charset = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~";
+  let result = "";
+  const values = crypto.getRandomValues(new Uint8Array(length));
+  for (let i = 0; i < length; i++) {
+    result += charset[values[i] % charset.length];
+  }
+  return result;
+}
+
+async function generateCodeChallenge(codeVerifier: string) {
+  const encoder = new TextEncoder();
+  const data = encoder.encode(codeVerifier);
+  const digest = await crypto.subtle.digest("SHA-256", data);
+  return btoa(String.fromCharCode(...new Uint8Array(digest)))
+    .replace(/\+/g, "-")
+    .replace(/\//g, "_")
+    .replace(/=+$/, "");
+}
+
 export default function Header({ categories }: HeaderProps) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [userInfo, setUserInfo] = useState<CognitoToken | null>(null);
@@ -38,21 +58,52 @@ export default function Header({ categories }: HeaderProps) {
   const isAdmin = userInfo?.["cognito:groups"]?.includes("ADMIN") ?? false;
   const displayName = userInfo?.email || userInfo?.["cognito:username"] || "Tài khoản";
 
+  const domain = "https://ap-southeast-1vuxgzpcdu.auth.ap-southeast-1.amazoncognito.com";
+  const clientId = "1n00iku2aqmicd0ctuq51ijk7b";
+  const redirectUri = "https://d26tfxw2msp72q.cloudfront.net";
+
   useEffect(() => {
-    const hash = window.location.hash;
-    if (hash && hash.includes("access_token=")) {
-      const params = new URLSearchParams(hash.substring(1));
-      const token = params.get("access_token");
-      if (token) {
-        localStorage.setItem("customer_token", token);
-        window.history.replaceState(null, "", window.location.pathname + window.location.search);
-        setUserInfo(parseToken(token));
-      }
+    const params = new URLSearchParams(window.location.search);
+    const code = params.get("code");
+    const verifier = sessionStorage.getItem("pkce_verifier");
+
+    if (code && verifier) {
+      const body = new URLSearchParams();
+      body.append("grant_type", "authorization_code");
+      body.append("client_id", clientId);
+      body.append("code", code);
+      body.append("redirect_uri", redirectUri);
+      body.append("code_verifier", verifier);
+
+      fetch(domain + "/oauth2/token", {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: body.toString(),
+      })
+        .then((res) => res.json())
+        .then((data) => {
+          if (data.access_token) {
+            localStorage.setItem("customer_token", data.access_token);
+            sessionStorage.removeItem("pkce_verifier");
+            window.history.replaceState(null, "", window.location.pathname);
+            setUserInfo(parseToken(data.access_token));
+          }
+        })
+        .catch(console.error);
     } else {
       const token = localStorage.getItem("customer_token");
       if (token) setUserInfo(parseToken(token));
     }
   }, []);
+
+  const handleLoginClick = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    const verifier = generateRandomString(128);
+    const challenge = await generateCodeChallenge(verifier);
+    sessionStorage.setItem("pkce_verifier", verifier);
+    const loginUrl = domain + "/login?client_id=" + clientId + "&response_type=code&scope=email+openid&redirect_uri=" + encodeURIComponent(redirectUri) + "&code_challenge=" + challenge + "&code_challenge_method=S256";
+    window.location.href = loginUrl;
+  };
 
   const handleLogout = () => {
     localStorage.removeItem("customer_token");
@@ -91,9 +142,9 @@ export default function Header({ categories }: HeaderProps) {
           </Link>
 
           <nav className="hidden md:flex items-center gap-7 text-sm font-medium text-stone-600">
-            <Link href="/" className="hover:text-amber-700 transition-colors">Trang chủ</Link>
+            <Link href="/" className="hover:text-amber-700 transition-colors">Trang chủ </Link>
             {categories.slice(0, 5).map((cat) => (
-              <Link key={cat.id} href={`/categories/${cat.slug}`} className="hover:text-amber-700 transition-colors whitespace-nowrap">
+              <Link key={cat.id} href={/categories/ + cat.slug} className="hover:text-amber-700 transition-colors whitespace-nowrap">
                 {cat.name}
               </Link>
             ))}
@@ -106,7 +157,7 @@ export default function Header({ categories }: HeaderProps) {
               <div className="hidden lg:flex items-center gap-3">
                 {isAdmin && (
                   <a
-                    href="http://localhost:3001"
+                    href="https://d2gsjrw8qdxah8.cloudfront.net"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="inline-flex items-center gap-1.5 bg-amber-50 border border-amber-300 text-amber-800 text-xs font-semibold px-3 py-1.5 rounded-lg hover:bg-amber-100 transition-colors"
@@ -127,13 +178,8 @@ export default function Header({ categories }: HeaderProps) {
               </div>
             ) : (
               <a
-                href={process.env.NEXT_PUBLIC_COGNITO_HOSTED_UI_URL || "#"}
-                onClick={(e) => {
-                  if (!process.env.NEXT_PUBLIC_COGNITO_HOSTED_UI_URL) {
-                    e.preventDefault();
-                    alert("Vui lòng cấu hình NEXT_PUBLIC_COGNITO_HOSTED_UI_URL trong .env.local");
-                  }
-                }}
+                href="#"
+                onClick={handleLoginClick}
                 className="hidden lg:inline-flex items-center gap-1.5 text-stone-500 hover:text-amber-700 text-sm font-medium mr-2 transition-colors"
               >
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>

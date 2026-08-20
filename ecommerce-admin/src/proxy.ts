@@ -7,7 +7,6 @@ const TOKEN_KEY = "admin_token";
 export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  // Bỏ qua các đường dẫn công khai
   if (PUBLIC_PATHS.some((path) => pathname.startsWith(path))) {
     return NextResponse.next();
   }
@@ -16,7 +15,6 @@ export function proxy(request: NextRequest) {
   const token = request.cookies.get(TOKEN_KEY)?.value;
 
   if (!token) {
-    // Không có token -> chuyển về trang đăng nhập
     const loginUrl = new URL("/login", request.url);
     loginUrl.searchParams.set("redirect", pathname);
     return NextResponse.redirect(loginUrl);
@@ -26,6 +24,5 @@ export function proxy(request: NextRequest) {
 }
 
 export const config = {
-  // Áp dụng cho tất cả các route, trừ _next và static files
   matcher: ["/((?!_next/static|_next/image|favicon.ico|.*\\.png$).*)"],
 };

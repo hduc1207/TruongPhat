@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
@@ -16,23 +16,45 @@ type CategoryInput = Omit<Category, "categoryId">;
 
 const EMPTY_FORM: CategoryInput = { name: "", slug: "", description: "" };
 
-const BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "";
+const BASE_URL = "https://z5m5voxdhc.execute-api.ap-southeast-1.amazonaws.com/Stage";
 
 function toSlug(text: string) {
   return text
     .toLowerCase()
     .normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "")
-    .replace(/đ/g, "d")
+    .replace(/Ä‘/g, "d")
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-|-$/g, "");
 }
 
+function getToken() {
+  if (typeof document === 'undefined') return null;
+  const match = document.cookie.match(/(^| )admin_token=([^;]+)/);
+  if (match) return match[2];
+  return null;
+}
+
 async function apiRequest<T>(path: string, init?: RequestInit): Promise<T> {
-  const res = await fetch(path, init);
+  const token = getToken();
+  if (!token) throw new UnauthorizedError();
+  
+  const headers = new Headers(init?.headers);
+  headers.set('Authorization', 'Bearer ' + token);
+  if (!headers.has('Content-Type')) {
+    headers.set('Content-Type', 'application/json');
+  }
+  const directPath = path.replace(/^\/api/, '');
+  const res = await fetch(BASE_URL + directPath, { ...init, headers });
+  
   if (res.status === 401) throw new UnauthorizedError();
-  if (!res.ok) throw new Error(`HTTP ${res.status}`);
-  return res.json();
+  if (!res.ok) throw new Error("HTTP " + res.status);
+  
+  const data = await res.json();
+  if (directPath === '/categories' && (!init || init.method === 'GET')) {
+    return (Array.isArray(data) ? data : (data.value ?? [])) as T;
+  }
+  return data;
 }
 
 export default function CategoriesPage() {
@@ -58,7 +80,7 @@ export default function CategoriesPage() {
       setCategories(data);
     } catch (e) {
       if (e instanceof UnauthorizedError) { router.replace("/login"); return; }
-      setError("API Danh mục chưa sẵn sàng hoặc không thể kết nối.");
+      setError("API Danh má»¥c chÆ°a sáºµn sÃ ng hoáº·c khÃ´ng thá»ƒ káº¿t ná»‘i.");
     } finally {
       setLoading(false);
     }
@@ -81,7 +103,7 @@ export default function CategoriesPage() {
   }
 
   async function handleSave() {
-    if (!form.name.trim()) { setFormError("Tên danh mục không được để trống."); return; }
+    if (!form.name.trim()) { setFormError("TÃªn danh má»¥c khÃ´ng Ä‘Æ°á»£c Ä‘á»ƒ trá»‘ng."); return; }
     setSaving(true);
     setFormError("");
     try {
@@ -106,21 +128,21 @@ export default function CategoriesPage() {
       setModal(null);
     } catch (e) {
       if (e instanceof UnauthorizedError) { router.replace("/login"); return; }
-      setFormError("Lưu thất bại. Backend chưa hỗ trợ API này.");
+      setFormError("LÆ°u tháº¥t báº¡i. Backend chÆ°a há»— trá»£ API nÃ y.");
     } finally {
       setSaving(false);
     }
   }
 
   async function handleDelete(id: string, name: string) {
-    if (!confirm(`Xóa danh mục "${name}"?`)) return;
+    if (!confirm(`XÃ³a danh má»¥c "${name}"?`)) return;
     setDeleting(id);
     try {
       await apiRequest(`/api/categories/${id}`, { method: "DELETE" });
       setCategories((prev) => prev.filter((c) => c.categoryId !== id));
     } catch (e) {
       if (e instanceof UnauthorizedError) { router.replace("/login"); return; }
-      alert("Xóa thất bại. Vui lòng thử lại.");
+      alert("XÃ³a tháº¥t báº¡i. Vui lÃ²ng thá»­ láº¡i.");
     } finally {
       setDeleting(null);
     }
@@ -132,7 +154,7 @@ export default function CategoriesPage() {
 
   return (
     <>
-      <AdminHeader title="Quản lý Danh mục" />
+      <AdminHeader title="Quáº£n lÃ½ Danh má»¥c" />
       <main className="flex-1 p-6">
         <div className="bg-white rounded-xl border border-gray-100 shadow-sm">
 
@@ -144,20 +166,20 @@ export default function CategoriesPage() {
               </svg>
               <input
                 type="text"
-                placeholder="Tìm kiếm danh mục..."
+                placeholder="TÃ¬m kiáº¿m danh má»¥c..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 className="w-full pl-9 pr-4 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
             </div>
             <div className="flex items-center gap-2 shrink-0">
-              <span className="text-sm text-gray-400">{filtered.length} danh mục</span>
+              <span className="text-sm text-gray-400">{filtered.length} danh má»¥c</span>
               <button onClick={load} className="px-3 py-2 border border-gray-200 text-gray-600 text-sm rounded-lg hover:bg-gray-50 transition-colors">
-                Tải lại
+                Táº£i láº¡i
               </button>
               <button onClick={openAdd} className="flex items-center gap-1.5 px-4 py-2 bg-[#1e2532] text-white text-sm font-medium rounded-lg hover:bg-[#2a3347] transition-colors">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" /></svg>
-                Thêm danh mục
+                ThÃªm danh má»¥c
               </button>
             </div>
           </div>
@@ -165,7 +187,7 @@ export default function CategoriesPage() {
           {/* Error */}
           {error && (
             <div className="mx-6 mt-4 bg-amber-50 border border-amber-100 rounded-lg px-4 py-3 text-sm text-amber-700">
-              {error} — Bạn vẫn có thể thêm danh mục, dữ liệu sẽ được lưu khi API sẵn sàng.
+              {error} â€” Báº¡n váº«n cÃ³ thá»ƒ thÃªm danh má»¥c, dá»¯ liá»‡u sáº½ Ä‘Æ°á»£c lÆ°u khi API sáºµn sÃ ng.
             </div>
           )}
 
@@ -178,17 +200,17 @@ export default function CategoriesPage() {
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-gray-100">
-                    <th className="text-left text-xs text-gray-400 font-semibold px-6 py-3 uppercase tracking-wider">Tên danh mục</th>
+                    <th className="text-left text-xs text-gray-400 font-semibold px-6 py-3 uppercase tracking-wider">TÃªn danh má»¥c</th>
                     <th className="text-left text-xs text-gray-400 font-semibold px-6 py-3 uppercase tracking-wider hidden md:table-cell">Slug</th>
-                    <th className="text-left text-xs text-gray-400 font-semibold px-6 py-3 uppercase tracking-wider hidden lg:table-cell">Mô tả</th>
-                    <th className="text-right text-xs text-gray-400 font-semibold px-6 py-3 uppercase tracking-wider">Thao tác</th>
+                    <th className="text-left text-xs text-gray-400 font-semibold px-6 py-3 uppercase tracking-wider hidden lg:table-cell">MÃ´ táº£</th>
+                    <th className="text-right text-xs text-gray-400 font-semibold px-6 py-3 uppercase tracking-wider">Thao tÃ¡c</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-50">
                   {filtered.length === 0 ? (
                     <tr>
                       <td colSpan={4} className="text-center py-12 text-gray-400 text-sm">
-                        {error ? "Không thể tải danh mục từ server." : "Chưa có danh mục nào."}
+                        {error ? "KhÃ´ng thá»ƒ táº£i danh má»¥c tá»« server." : "ChÆ°a cÃ³ danh má»¥c nÃ o."}
                       </td>
                     </tr>
                   ) : (
@@ -196,16 +218,16 @@ export default function CategoriesPage() {
                       <tr key={c.categoryId} className="hover:bg-gray-50/50 transition-colors">
                         <td className="px-6 py-4 font-medium text-gray-800">{c.name}</td>
                         <td className="px-6 py-4 text-gray-400 font-mono text-xs hidden md:table-cell">{c.slug}</td>
-                        <td className="px-6 py-4 text-gray-500 hidden lg:table-cell truncate max-w-[240px]">{c.description || "—"}</td>
+                        <td className="px-6 py-4 text-gray-500 hidden lg:table-cell truncate max-w-[240px]">{c.description || "â€”"}</td>
                         <td className="px-6 py-4 text-right">
                           <div className="flex items-center justify-end gap-3">
-                            <button onClick={() => openEdit(c)} className="text-xs text-blue-500 hover:text-blue-700 font-medium transition-colors">Sửa</button>
+                            <button onClick={() => openEdit(c)} className="text-xs text-blue-500 hover:text-blue-700 font-medium transition-colors">Sá»­a</button>
                             <button
                               onClick={() => handleDelete(c.categoryId, c.name)}
                               disabled={deleting === c.categoryId}
                               className="text-xs text-red-500 hover:text-red-700 font-medium transition-colors disabled:opacity-40"
                             >
-                              {deleting === c.categoryId ? "Đang xóa..." : "Xóa"}
+                              {deleting === c.categoryId ? "Äang xÃ³a..." : "XÃ³a"}
                             </button>
                           </div>
                         </td>
@@ -225,7 +247,7 @@ export default function CategoriesPage() {
           <div className="bg-white rounded-2xl shadow-xl w-full max-w-md">
             <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
               <h2 className="font-semibold text-gray-800">
-                {modal === "add" ? "Thêm danh mục mới" : "Chỉnh sửa danh mục"}
+                {modal === "add" ? "ThÃªm danh má»¥c má»›i" : "Chá»‰nh sá»­a danh má»¥c"}
               </h2>
               <button onClick={() => setModal(null)} className="text-gray-400 hover:text-gray-600">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
@@ -237,9 +259,9 @@ export default function CategoriesPage() {
                 <div className="bg-red-50 border border-red-100 rounded-lg px-4 py-3 text-sm text-red-600">{formError}</div>
               )}
               {[
-                { key: "name", label: "Tên danh mục *", placeholder: "VD: Sofa - Salon" },
-                { key: "slug", label: "Slug (để trống sẽ tự tạo)", placeholder: "vd: sofa-salon" },
-                { key: "description", label: "Mô tả", placeholder: "Mô tả ngắn về danh mục..." },
+                { key: "name", label: "TÃªn danh má»¥c *", placeholder: "VD: Sofa - Salon" },
+                { key: "slug", label: "Slug (Ä‘á»ƒ trá»‘ng sáº½ tá»± táº¡o)", placeholder: "vd: sofa-salon" },
+                { key: "description", label: "MÃ´ táº£", placeholder: "MÃ´ táº£ ngáº¯n vá» danh má»¥c..." },
               ].map(({ key, label, placeholder }) => (
                 <div key={key}>
                   <label className="block text-sm font-medium text-gray-700 mb-1.5">{label}</label>
@@ -255,13 +277,13 @@ export default function CategoriesPage() {
             </div>
 
             <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-gray-100">
-              <button onClick={() => setModal(null)} className="px-4 py-2 text-sm text-gray-600 hover:text-gray-800 transition-colors">Hủy</button>
+              <button onClick={() => setModal(null)} className="px-4 py-2 text-sm text-gray-600 hover:text-gray-800 transition-colors">Há»§y</button>
               <button
                 onClick={handleSave}
                 disabled={saving}
                 className="px-5 py-2 bg-[#1e2532] text-white text-sm font-medium rounded-lg hover:bg-[#2a3347] transition-colors disabled:opacity-60"
               >
-                {saving ? "Đang lưu..." : modal === "add" ? "Thêm danh mục" : "Lưu thay đổi"}
+                {saving ? "Äang lÆ°u..." : modal === "add" ? "ThÃªm danh má»¥c" : "LÆ°u thay Ä‘á»•i"}
               </button>
             </div>
           </div>
@@ -270,3 +292,8 @@ export default function CategoriesPage() {
     </>
   );
 }
+
+
+
+
+

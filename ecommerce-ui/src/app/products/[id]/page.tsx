@@ -1,3 +1,4 @@
+import { getProducts } from "@/services/api";
 import { notFound } from "next/navigation";
 import { getProductById, getRelatedProducts, getCategoryBySlug } from "@/services/api";
 import ProductGallery from "@/components/product/ProductGallery";
@@ -46,4 +47,9 @@ export default async function ProductPage({ params }: ProductPageProps) {
       )}
     </div>
   );
+}
+
+export async function generateStaticParams() {
+  const products = await getProducts();
+  return products.map((p) => ({ id: p.id }));
 }

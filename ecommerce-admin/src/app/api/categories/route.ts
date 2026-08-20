@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { verifyAdminToken } from "@/utils/verify-token";
 
-const BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "";
+const BASE_URL = "https://z5m5voxdhc.execute-api.ap-southeast-1.amazonaws.com/Stage";
 
 export async function GET() {
   if (!(await verifyAdminToken())) {
@@ -35,3 +35,5 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Lỗi tạo danh mục" }, { status: 500 });
   }
 }
+
+export const dynamic = 'force-static';

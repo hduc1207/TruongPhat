@@ -11,14 +11,14 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Thiếu token" }, { status: 400 });
     }
 
-    const userPoolId = process.env.COGNITO_USER_POOL_ID;
-    const clientId = process.env.NEXT_PUBLIC_COGNITO_CLIENT_ID;
+    const userPoolId = "ap-southeast-1_vUxgZPCdU";
+    const clientId = "1n00iku2aqmicd0ctuq51ijk7b";
 
     if (!userPoolId || !clientId) {
       return NextResponse.json({ error: "Server chưa cấu hình Cognito" }, { status: 500 });
     }
 
-    // Xác minh token bằng public key của AWS (không cần gọi lại AWS)
+    // Xác minh token bằng public key của AWS
     const verifier = CognitoJwtVerifier.create({
       userPoolId,
       tokenUse: "access",
@@ -40,9 +40,9 @@ export async function POST(request: Request) {
     const cookieStore = await cookies();
     cookieStore.set("admin_token", token, {
       path: "/",
-      maxAge: 60 * 60, // 1 giờ (bằng Access Token Cognito mặc định)
+      maxAge: 60 * 60,
       sameSite: "lax",
-      httpOnly: true, // Không cho JS đọc được cookie
+      httpOnly: true,
       secure: process.env.NODE_ENV === "production",
     });
 
@@ -55,3 +55,5 @@ export async function POST(request: Request) {
     );
   }
 }
+
+export const dynamic = 'force-static';

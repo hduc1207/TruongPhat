@@ -1,51 +1,30 @@
-import { NextResponse } from "next/server";
-import { createHmac, timingSafeEqual } from "crypto";
+import { NextResponse } from 'next/server';
+import { cookies } from 'next/headers';
+import crypto from 'crypto';
 
-const MOCK_USERNAME = process.env.MOCK_ADMIN_USERNAME ?? "";
-const MOCK_PASSWORD = process.env.MOCK_ADMIN_PASSWORD ?? "";
-const TOKEN_SECRET = process.env.MOCK_TOKEN_SECRET ?? "change_this_secret";
-const TOKEN_KEY = "admin_token";
-
-/**
- * Tạo token có chữ ký HMAC-SHA256.
- * Format: base64(payload).signature
- */
-function createSignedToken(username: string): string {
-  const payload = Buffer.from(
-    JSON.stringify({ username, role: "admin", iat: Date.now() })
-  ).toString("base64url");
-  const sig = createHmac("sha256", TOKEN_SECRET).update(payload).digest("hex");
-  return `${payload}.${sig}`;
+function base64URLEncode(buffer: Buffer) {
+  return buffer.toString('base64').replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
 }
 
-export async function POST(request: Request) {
-  try {
-    const body = await request.json();
-    const { username, password } = body ?? {};
+export async function GET() {
+  const verifier = base64URLEncode(crypto.randomBytes(32));
+  const challenge = base64URLEncode(crypto.createHash('sha256').update(verifier).digest());
 
-    if (!username || !password) {
-      return NextResponse.json({ error: "Thiếu thông tin đăng nhập" }, { status: 400 });
-    }
+  const cookieStore = await cookies();
+  cookieStore.set('pkce_verifier', verifier, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    path: '/',
+    maxAge: 600,
+  });
 
-    const bufUser = Buffer.from(username);
-    const bufMockUser = Buffer.from(MOCK_USERNAME);
-    const usernameMatch = bufUser.length === bufMockUser.length && timingSafeEqual(bufUser, bufMockUser);
+  const domain = "https://d26tfxw2msp72q.cloudfront.net";
+  const clientId = "1n00iku2aqmicd0ctuq51ijk7b";
+  const redirectUri = "https://d2gsjrw8qdxah8.cloudfront.net/auth/callback";
 
-    const bufPass = Buffer.from(password);
-    const bufMockPass = Buffer.from(MOCK_PASSWORD);
-    const passwordMatch = bufPass.length === bufMockPass.length && timingSafeEqual(bufPass, bufMockPass);
+  const loginUrl = `${domain}/login?client_id=${clientId}&response_type=code&scope=email+openid&redirect_uri=${encodeURIComponent(redirectUri)}&code_challenge=${challenge}&code_challenge_method=S256`;
 
-    if (!usernameMatch || !passwordMatch) {
-      // Delay nhỏ để hạn chế brute-force
-      await new Promise((r) => setTimeout(r, 500));
-      return NextResponse.json({ error: "Sai thông tin đăng nhập" }, { status: 401 });
-    }
-
-    const token = createSignedToken(username);
-
-    // Gửi token qua response body để client tự set cookie
-    return NextResponse.json({ token, role: "admin" });
-  } catch {
-    return NextResponse.json({ error: "Lỗi máy chủ" }, { status: 500 });
-  }
+  return NextResponse.redirect(loginUrl);
 }
+
+export const dynamic = 'force-static';

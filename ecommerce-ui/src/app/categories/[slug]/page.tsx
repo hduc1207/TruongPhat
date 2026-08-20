@@ -1,3 +1,4 @@
+import { getCategories } from "@/services/api";
 import { notFound } from "next/navigation";
 import { getCategoryBySlug, getProductsByCategory } from "@/services/api";
 import CategoryContent from "@/components/category/CategoryContent";
@@ -19,4 +20,9 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
   }
 
   return <CategoryContent category={category} products={categoryProducts} />;
+}
+
+export async function generateStaticParams() {
+  const categories = await getCategories();
+  return categories.map((c) => ({ slug: c.slug }));
 }

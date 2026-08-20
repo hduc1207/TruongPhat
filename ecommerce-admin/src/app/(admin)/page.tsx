@@ -1,18 +1,8 @@
+"use client";
+
+import { useEffect, useState } from "react";
 import AdminHeader from "@/components/layout/Header";
-import type { Product } from "@/services/api";
-
-const BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "";
-
-async function fetchProductsServer(): Promise<Product[]> {
-  try {
-    const res = await fetch(`${BASE_URL}/products`, { cache: "no-store" });
-    if (!res.ok) return [];
-    const data = await res.json();
-    return Array.isArray(data) ? data : (data.value ?? []);
-  } catch {
-    return [];
-  }
-}
+import { getProducts, type Product } from "@/services/api";
 
 interface StatCardProps {
   label: string;
@@ -42,8 +32,16 @@ function StatCard({ label, value, sub, trend, color = "bg-blue-50 text-blue-600"
   );
 }
 
-export default async function DashboardPage() {
-  const products = await fetchProductsServer();
+export default function DashboardPage() {
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    getProducts()
+      .then(setProducts)
+      .catch((err) => console.error("Lỗi tải tổng quan:", err))
+      .finally(() => setLoading(false));
+  }, []);
 
   const withCategory = products.filter((p) => p.category !== null).length;
 
@@ -51,45 +49,23 @@ export default async function DashboardPage() {
     <>
       <AdminHeader title="Tổng quan Showroom" />
       <main className="flex-1 p-6 bg-gray-50/50">
-        
-        {/* Welcome */}
         <div className="mb-8">
           <h1 className="text-2xl font-bold text-gray-800">Xin chào, Admin!</h1>
           <p className="text-gray-500 mt-1">Dưới đây là thống kê tình hình hoạt động của showroom Gỗ Trường Phát.</p>
         </div>
 
-        {/* Stats */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
           <StatCard
             label="Sản phẩm trưng bày"
-            value={products.length}
-            sub={`${withCategory} sản phẩm đã phân loại`}
+            value={loading ? "..." : products.length}
+            sub={loading ? "Đang tải..." : `${withCategory} sản phẩm đã phân loại`}
             color="bg-blue-100"
           />
-          <StatCard
-            label="Yêu cầu báo giá mới"
-            value="12"
-            trend="+3 hôm nay"
-            sub="Cần phản hồi qua Zalo/SĐT"
-            color="bg-amber-100"
-          />
-          <StatCard
-            label="Lượt xem website"
-            value="2,845"
-            trend="+15%"
-            sub="Trong 7 ngày qua"
-            color="bg-purple-100"
-          />
-          <StatCard
-            label="Lượt click Zalo"
-            value="142"
-            trend="+8%"
-            sub="Tỷ lệ chuyển đổi tốt"
-            color="bg-green-100"
-          />
+          <StatCard label="Yêu cầu báo giá mới" value="12" trend="+3 hôm nay" sub="Cần phản hồi qua Zalo/SĐT" color="bg-amber-100" />
+          <StatCard label="Lượt xem website" value="2,845" trend="+15%" sub="Trong 7 ngày qua" color="bg-purple-100" />
+          <StatCard label="Lượt click Zalo" value="142" trend="+8%" sub="Tỷ lệ chuyển đổi tốt" color="bg-green-100" />
         </div>
 
-        {/* Danh sách sản phẩm mới nhất */}
         <div className="bg-white rounded-xl border border-gray-100 shadow-sm">
           <div className="flex items-center justify-between px-6 py-5 border-b border-gray-100">
             <h2 className="font-semibold text-gray-800">Sản phẩm vừa cập nhật</h2>
@@ -107,10 +83,10 @@ export default async function DashboardPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
-                {products.length === 0 ? (
-                  <tr>
-                    <td colSpan={3} className="text-center py-8 text-gray-400">Chưa có dữ liệu</td>
-                  </tr>
+                {loading ? (
+                  <tr><td colSpan={3} className="text-center py-8 text-gray-400">Đang tải...</td></tr>
+                ) : products.length === 0 ? (
+                  <tr><td colSpan={3} className="text-center py-8 text-gray-400">Chưa có dữ liệu</td></tr>
                 ) : (
                   products.slice(0, 5).map((p) => (
                     <tr key={p.productId} className="hover:bg-gray-50/80 transition-colors">
