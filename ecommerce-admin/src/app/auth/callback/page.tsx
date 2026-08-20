@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { fetchAuthSession } from "aws-amplify/auth";
@@ -14,13 +14,13 @@ export default function AuthCallbackPage() {
       try {
         const session = await fetchAuthSession();
         if (session.tokens?.accessToken) {
-          if (isMounted) router.push("/");
+          if (isMounted) window.location.replace("/");
         } else {
           setTimeout(async () => {
             try {
               const retrySession = await fetchAuthSession();
               if (retrySession.tokens?.accessToken && isMounted) {
-                router.push("/");
+                window.location.replace("/");
               } else {
                 if (isMounted) setErrorMsg("Đăng nhập thất bại.");
               }
