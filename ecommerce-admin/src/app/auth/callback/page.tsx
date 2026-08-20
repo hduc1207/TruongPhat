@@ -20,7 +20,7 @@ export default function AuthCallbackPage() {
 
     const domain = "https://ap-southeast-1vuxgzpcdu.auth.ap-southeast-1.amazoncognito.com";
     const clientId = "1n00iku2aqmicd0ctuq51ijk7b";
-    const redirectUri = "https://d2gsjrw8qdxah8.cloudfront.net/auth/callback";
+    const redirectUri = "https://d2gsjrw8qdxah8.cloudfront.net/auth/callback.html";
 
     const body = new URLSearchParams();
     body.append("grant_type", "authorization_code");

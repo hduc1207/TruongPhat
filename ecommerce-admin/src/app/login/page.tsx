@@ -31,7 +31,7 @@ export default function LoginPage() {
 
       const domain = "https://ap-southeast-1vuxgzpcdu.auth.ap-southeast-1.amazoncognito.com";
       const clientId = "1n00iku2aqmicd0ctuq51ijk7b";
-      const redirectUri = "https://d2gsjrw8qdxah8.cloudfront.net/auth/callback";
+      const redirectUri = "https://d2gsjrw8qdxah8.cloudfront.net/auth/callback.html";
 
       const loginUrl = domain + "/login?client_id=" + clientId + "&response_type=code&scope=email+openid&redirect_uri=" + encodeURIComponent(redirectUri) + "&code_challenge=" + challenge + "&code_challenge_method=S256";
       
