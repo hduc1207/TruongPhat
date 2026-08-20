@@ -9,8 +9,9 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
   const [authorized, setAuthorized] = useState(false);
 
   useEffect(() => {
-    // Không bảo vệ trang /login và trang /auth/callback
-    if (pathname === "/login" || pathname === "/auth/callback") {
+    const safePath = pathname || "";
+    // Bỏ qua bảo vệ cho trang login và callback (kể cả có đuôi .html)
+    if (safePath.startsWith("/login") || safePath.startsWith("/auth/callback")) {
       setAuthorized(true);
       return;
     }
@@ -21,15 +22,15 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
         if (session.tokens?.accessToken) {
           if (isMounted) setAuthorized(true);
         } else {
-          router.replace("/login");
+          window.location.replace("/login.html");
         }
       })
       .catch(() => {
-        router.replace("/login");
+        window.location.replace("/login.html");
       });
 
     return () => { isMounted = false; };
-  }, [pathname, router]);
+  }, [pathname]);
 
   if (!authorized) {
     return (
