@@ -64,9 +64,14 @@ export default function Header({ categories = [] }: HeaderProps) {
     };
   }, []);
 
-  const handleLoginClick = (e: React.MouseEvent) => {
+  const handleLoginClick = async (e: React.MouseEvent) => {
     e.preventDefault();
-    signInWithRedirect();
+    try {
+      await signInWithRedirect();
+    } catch (error: any) {
+      console.error("Lỗi đăng nhập:", error);
+      alert("Lỗi khi gọi đăng nhập: " + error.message);
+    }
   };
 
   const handleLogout = () => {

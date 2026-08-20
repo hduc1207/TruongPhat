@@ -11,8 +11,8 @@ Amplify.configure({
         oauth: {
           domain: "ap-southeast-1vuxgzpcdu.auth.ap-southeast-1.amazoncognito.com",
           scopes: ["email", "openid"],
-          redirectSignIn: ["https://d26tfxw2msp72q.cloudfront.net"],
-          redirectSignOut: ["https://d26tfxw2msp72q.cloudfront.net"],
+          redirectSignIn: ["https://d26tfxw2msp72q.cloudfront.net", "http://localhost:3000"],
+          redirectSignOut: ["https://d26tfxw2msp72q.cloudfront.net", "http://localhost:3000"],
           responseType: "code",
         },
       },

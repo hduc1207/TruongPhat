@@ -1,10 +1,14 @@
-﻿"use client";
+"use client";
 import { signInWithRedirect } from "aws-amplify/auth";
 
 export default function LoginPage() {
-  const handleLogin = (e: React.MouseEvent) => {
+  const handleLogin = async (e: React.MouseEvent) => {
     e.preventDefault();
-    signInWithRedirect();
+    try {
+      await signInWithRedirect();
+    } catch (error: any) {
+      alert("Lỗi khi đăng nhập: " + error.message);
+    }
   };
 
   return (
