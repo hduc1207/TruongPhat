@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
@@ -7,7 +7,7 @@ import { signOut } from "aws-amplify/auth";
 const navItems = [
   {
     href: "/",
-    label: "Tá»•ng quan",
+    label: "Tổng quan",
     icon: (
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
         <rect x="3" y="3" width="7" height="7" /><rect x="14" y="3" width="7" height="7" />
@@ -17,7 +17,7 @@ const navItems = [
   },
   {
     href: "/products",
-    label: "Sáº£n pháº©m",
+    label: "Sản phẩm",
     icon: (
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
         <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z" />
@@ -28,7 +28,7 @@ const navItems = [
   },
   {
     href: "/categories",
-    label: "Danh má»¥c",
+    label: "Danh mục",
     icon: (
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
         <line x1="8" y1="6" x2="21" y2="6" /><line x1="8" y1="12" x2="21" y2="12" />
@@ -55,7 +55,7 @@ export default function AdminSidebar() {
             <span className="text-white font-bold text-sm">G</span>
           </div>
           <div>
-            <p className="text-white font-semibold text-sm leading-tight">Gá»— TrÆ°á»ng PhÃ¡t</p>
+            <p className="text-white font-semibold text-sm leading-tight">Gỗ Trường Phát</p>
             <p className="text-white/40 text-xs">Admin Panel</p>
           </div>
         </div>
@@ -64,7 +64,7 @@ export default function AdminSidebar() {
       {/* Navigation */}
       <nav className="flex-1 px-3 py-4 overflow-y-auto">
         <p className="text-white/30 text-xs font-semibold uppercase tracking-wider px-3 mb-2">
-          Quáº£n lÃ½
+          Quản lý
         </p>
         <ul className="space-y-0.5">
           {navItems.map((item) => {
@@ -100,10 +100,9 @@ export default function AdminSidebar() {
             <polyline points="16 17 21 12 16 7" />
             <line x1="21" y1="12" x2="9" y2="12" />
           </svg>
-          ÄÄƒng xuáº¥t
+          Đăng xuất
         </button>
       </div>
     </aside>
   );
 }
-

@@ -59,7 +59,7 @@ export default function ProductsPage() {
       setProducts(data);
     } catch (e) {
       if (e instanceof UnauthorizedError) {
-        router.replace("/login?redirect=/products");
+        window.location.replace("/login.html");
         return;
       }
       setError("Không thể tải dữ liệu. Vui lòng thử lại.");
@@ -70,7 +70,6 @@ export default function ProductsPage() {
 
   useEffect(() => { load(); }, [load]);
 
-  // ── Mở modal ──────────────────────────────────────────────────────────────
   function openAdd() {
     setForm(EMPTY_FORM);
     setFormError("");
@@ -94,7 +93,6 @@ export default function ProductsPage() {
     setModal("edit");
   }
 
-  // ── Lưu ───────────────────────────────────────────────────────────────────
   async function handleSave() {
     if (!form.name.trim()) { setFormError("Tên sản phẩm không được để trống."); return; }
     setSaving(true);
@@ -112,14 +110,13 @@ export default function ProductsPage() {
       }
       setModal(null);
     } catch (e) {
-      if (e instanceof UnauthorizedError) { router.replace("/login"); return; }
+      if (e instanceof UnauthorizedError) { window.location.replace("/login.html"); return; }
       setFormError("Lưu thất bại. Vui lòng thử lại.");
     } finally {
       setSaving(false);
     }
   }
 
-  // ── Xóa ───────────────────────────────────────────────────────────────────
   async function handleDelete(id: string, name: string) {
     if (!confirm(`Xóa sản phẩm "${name}"?`)) return;
     setDeleting(id);
@@ -127,7 +124,7 @@ export default function ProductsPage() {
       await deleteProduct(id);
       setProducts((prev) => prev.filter((p) => p.productId !== id));
     } catch (e) {
-      if (e instanceof UnauthorizedError) { router.replace("/login"); return; }
+      if (e instanceof UnauthorizedError) { window.location.replace("/login.html"); return; }
       alert("Xóa thất bại. Vui lòng thử lại.");
     } finally {
       setDeleting(null);
@@ -203,16 +200,17 @@ export default function ProductsPage() {
                   ) : (
                     filtered.map((p) => (
                       <tr key={p.productId} className="hover:bg-gray-50/50 transition-colors">
-                        <td className="px-6 py-4">
-                          <p className="font-medium text-gray-800">{p.name}</p>
-                          <p className="text-xs text-gray-400 mt-0.5 truncate max-w-[220px]">{p.description}</p>
-                        </td>
+                        <td className="px-6 py-4 font-medium text-gray-800">{p.name}</td>
                         <td className="px-6 py-4 text-gray-500 hidden md:table-cell">{p.material || "—"}</td>
-                        <td className="px-6 py-4 text-gray-500 hidden lg:table-cell font-mono text-xs">{p.dimensions || "—"}</td>
+                        <td className="px-6 py-4 text-gray-500 hidden lg:table-cell">{p.dimensions || "—"}</td>
                         <td className="px-6 py-4 hidden md:table-cell">
-                          {p.category
-                            ? <span className="bg-blue-50 text-blue-600 text-xs font-medium px-2.5 py-1 rounded-full">{p.category}</span>
-                            : <span className="bg-gray-100 text-gray-400 text-xs font-medium px-2.5 py-1 rounded-full">Chưa phân loại</span>}
+                          {p.category ? (
+                            <span className="bg-gray-100 text-gray-600 text-xs font-medium px-2.5 py-1 rounded-md border border-gray-200">
+                              {p.category}
+                            </span>
+                          ) : (
+                            <span className="text-gray-400 text-xs italic">Trống</span>
+                          )}
                         </td>
                         <td className="px-6 py-4 text-right">
                           <div className="flex items-center justify-end gap-3">
