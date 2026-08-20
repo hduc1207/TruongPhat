@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import MobileMenu from "./MobileMenu";
 import { signInWithRedirect, signOut, fetchAuthSession, getCurrentUser } from "aws-amplify/auth";
+import { Hub } from "aws-amplify/utils";
 
 interface HeaderProps {
   categories?: any[];
@@ -16,32 +17,51 @@ export default function Header({ categories = [] }: HeaderProps) {
   const [displayName, setDisplayName] = useState("Tài khoản");
 
   useEffect(() => {
-    // Amplify automatically handles the ?code= in URL.
-    // We just wait for session.
     let isMounted = true;
-    fetchAuthSession()
-      .then((session) => {
+
+    const checkUser = async () => {
+      try {
+        const session = await fetchAuthSession();
         if (session.tokens?.accessToken) {
           if (isMounted) {
             setIsLoggedIn(true);
             const groups = session.tokens.accessToken.payload["cognito:groups"] as string[] | undefined;
             setIsAdmin(groups?.includes("ADMIN") ?? false);
           }
-          return getCurrentUser();
+          const user = await getCurrentUser();
+          if (user && isMounted) {
+            setDisplayName(user.signInDetails?.loginId || user.username);
+          }
+        } else {
+          if (isMounted) setIsLoggedIn(false);
         }
-        return null;
-      })
-      .then((user) => {
-        if (user && isMounted) {
-          setDisplayName(user.signInDetails?.loginId || user.username);
-        }
-      })
-      .catch(() => {
-        // Not logged in
+      } catch (err) {
         if (isMounted) setIsLoggedIn(false);
-      });
-      
-    return () => { isMounted = false; };
+      }
+    };
+
+    // Kiểm tra lúc mới load trang
+    checkUser();
+
+    // Lắng nghe sự kiện Auth từ Hub
+    const unsubscribe = Hub.listen("auth", ({ payload }) => {
+      switch (payload.event) {
+        case "signInWithRedirect":
+        case "signedIn":
+          checkUser();
+          break;
+        case "signedOut":
+          setIsLoggedIn(false);
+          setIsAdmin(false);
+          setDisplayName("Tài khoản");
+          break;
+      }
+    });
+
+    return () => {
+      isMounted = false;
+      unsubscribe();
+    };
   }, []);
 
   const handleLoginClick = (e: React.MouseEvent) => {

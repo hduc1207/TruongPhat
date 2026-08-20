@@ -1,13 +1,13 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import AmplifyConfigure from '@/components/AmplifyConfigure';
+import AuthGuard from '@/components/AuthGuard';
 
 export const metadata: Metadata = {
-  title: "Admin Panel - Gá»— TrÆ°á»ng PhÃ¡t",
-  description: "Trang quáº£n trá»‹ ná»™i bá»™ - Gá»— TrÆ°á»ng PhÃ¡t",
+  title: "Admin Panel - Gỗ Trường Phát",
+  description: "Trang quản trị nội bộ - Gỗ Trường Phát",
   robots: "noindex, nofollow",
 };
-
-import AmplifyConfigure from '@/components/AmplifyConfigure';
 
 export default function RootLayout({
   children,
@@ -18,9 +18,8 @@ export default function RootLayout({
     <html lang="vi">
       <body>
         <AmplifyConfigure />
-        {children}
+        <AuthGuard>{children}</AuthGuard>
       </body>
     </html>
   );
 }
-
